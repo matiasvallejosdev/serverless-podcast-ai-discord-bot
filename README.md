@@ -1,6 +1,7 @@
 # 🤖 Podcast Agent Bot
 
 [![Python application](https://github.com/matiasvallejosdev/podcast-agent-gpt-discord-bot-ai/actions/workflows/python-app.yml/badge.svg)](https://github.com/matiasvallejosdev/podcast-agent-gpt-discord-bot-ai/actions/workflows/python-app.yml)
+![License](https://img.shields.io/github/license/matiasvallejosdev/podcast-agent-gpt-discord-bot-ai?label=license&logo=github&color=f80&logoColor=fff)
 
 ## Introduction
 
