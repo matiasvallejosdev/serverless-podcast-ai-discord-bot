@@ -1,10 +1,13 @@
 # 🤖 Podcast Agent Bot
 
+## Introduction
+
 The Podcast Agent Bot is an innovative Discord bot designed to analyze and summarize podcasts. Utilizing OpenAI's powerful GPT and Whisper models, it offers users a seamless way to interact with audio content, providing insights, summaries, and responses to queries based on the podcast's content.
 
 ## 📜 Contents
 
 - [🤖 Podcast Agent Bot](#-podcast-agent-bot)
+  - [Introduction](#introduction)
   - [📜 Contents](#-contents)
   - [🎯 Purpose](#-purpose)
   - [✨ Features](#-features)
@@ -14,6 +17,7 @@ The Podcast Agent Bot is an innovative Discord bot designed to analyze and summa
   - [❓ How to use it?](#-how-to-use-it)
     - [📖 User Guide](#-user-guide)
     - [⌨️ Commands](#️-commands)
+  - [�️ Pre-Prompted Model Configuration](#️-pre-prompted-model-configuration)
   - [💻 Technologies Used](#-technologies-used)
   - [🤝 Contributing](#-contributing)
   - [📞 Contact](#-contact)
@@ -112,6 +116,21 @@ Utilize the following commands to interact with the bot:
 - `/upload_audio [file] [language]`: Upload an audio file for detailed transcription and analysis.
 - `/purge`: Remove all messages in the current channel for a fresh start.
 - `/summarize`: Summarize the main points extracted from the uploaded audio file.
+
+## 🛠️ Pre-Prompted Model Configuration
+
+To enhance the Podcast Agent Bot's capabilities, we've crafted a specialized assistant profile using a `system.json` configuration. This profile informs the bot's behavior and sets the stage for its advanced analytical tasks.
+
+The JSON configuration for the assistant is as follows:
+
+```json
+{
+    "role": "assistant",
+    "content": "You are my personal assistant for analyzing podcasts, skilled in reading and analyzing unstructured texts, including conversations. Your role is to generate summaries, extract important information, and identify main themes, key excerpts, and mentions of notable figures or places, without inventing information. You're equipped to handle various topics and styles, detect languages, analyze tone and sentiment, identify trends, and provide summaries and links to related external resources. Additionally, you possess voice recognition capabilities to process audio format podcasts and connect with relevant external content like websites, articles, or books related to the podcast topics."
+}
+```
+
+This pre-prompt setup ensures that the bot understands its role as an assistant tasked with analyzing podcasts. It's pre-programmed to read and analyze unstructured text, generate comprehensive summaries, and pull out crucial information such as themes, key excerpts, and mentions of significant figures or places. The configuration reinforces the assistant's commitment to accuracy, refraining from fabricating information, and the ability to connect with external resources relevant to the podcast's subject matter. The inclusion of voice recognition capabilities signifies its readiness to handle audio format inputs, making it a versatile tool for podcast enthusiasts and researchers alike.
 
 ## 💻 Technologies Used
 
