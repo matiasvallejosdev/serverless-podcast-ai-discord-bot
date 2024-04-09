@@ -30,9 +30,9 @@ Certainly! You can add a section to your README like this, referencing the image
 
 ## 🔧 System Design and Architecture
 
-![Podcast Agent Bot Design System](docs/design-system.png)
-
 The Podcast Agent Bot is architected to offer a seamless and interactive experience for Discord users to engage with podcast content. Below is an outline of the bot's system design and architecture:
+
+![Podcast Agent Bot Design System](docs/design-system.png)
 
 - **WebSockets (Discord pip API)**: This enables real-time communication between the client (user) and the bot, ensuring a responsive user experience.
 
@@ -54,8 +54,6 @@ The Podcast Agent Bot is architected to offer a seamless and interactive experie
   - `/ask`: To prompt the bot for specific information based on the podcast's transcribed text.
   - `/summarize`: To obtain a concise summary of the podcast's key points.
   - `/purge`: To clear all messages in the channel for a clean start.
-
-The design system image provides a visual representation of the bot's components and their interactions, ensuring users can easily understand and utilize the bot's extensive features within the Discord platform.
 
 To view the design system in the repository, navigate to `docs/design-system.png`.
 
