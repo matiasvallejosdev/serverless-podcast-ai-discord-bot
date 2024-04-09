@@ -7,17 +7,14 @@ The Podcast Agent Bot is an innovative Discord bot designed to analyze and summa
 - [🤖 Podcast Agent Bot](#-podcast-agent-bot)
   - [📜 Contents](#-contents)
   - [🎯 Purpose](#-purpose)
-  - [🔧 System Design and Architecture](#-system-design-and-architecture)
   - [✨ Features](#-features)
+  - [🔧 Interaction Design \& Architecture](#-interaction-design--architecture)
   - [🚀 Getting Started](#-getting-started)
     - [📥 Installation](#-installation)
   - [❓ How to use it?](#-how-to-use-it)
     - [📖 User Guide](#-user-guide)
     - [⌨️ Commands](#️-commands)
   - [💻 Technologies Used](#-technologies-used)
-    - [🔑 OpenAI API](#-openai-api)
-    - [🗣 Whisper by OpenAI](#-whisper-by-openai)
-    - [🤖 Discord API for Python](#-discord-api-for-python)
   - [🤝 Contributing](#-contributing)
   - [📞 Contact](#-contact)
   - [📄 License](#-license)
@@ -26,37 +23,6 @@ The Podcast Agent Bot is an innovative Discord bot designed to analyze and summa
 
 The creation of the Podcast Agent Bot was inspired by the challenge of consuming and retaining the wealth of information available in podcasts. Often, while listening to podcasts, taking notes and revisiting key points later can be cumbersome. This bot simplifies the process by providing tools to summarize, highlight important information, translate content, and offer an interactive Q&A feature based on the podcast, making the wealth of knowledge in podcasts more accessible and engaging.
 
-Certainly! You can add a section to your README like this, referencing the image you've provided:
-
-## 🔧 System Design and Architecture
-
-The Podcast Agent Bot is architected to offer a seamless and interactive experience for Discord users to engage with podcast content. Below is an outline of the bot's system design and architecture:
-
-![Podcast Agent Bot Design System](docs/design-system.png)
-
-- **WebSockets (Discord pip API)**: This enables real-time communication between the client (user) and the bot, ensuring a responsive user experience.
-
-- **Client Interaction Flow**:
-  1. **Starting Conversations**: Users can initiate conversations with the bot, providing context for accurate responses.
-  2. **Clearing History**: The bot supports clearing chat history, allowing users to start new sessions without previous context interference.
-  3. **Audio File Management**: Users can upload audio files from podcasts in supported audio formats for processing.
-  4. **Chat Interactions**: The bot enables users to ask questions and engage with the content extracted from the audio.
-
-- **Core Components**:
-  - **Podcast GPT (OpenAI Model)**: Leverages GPT-4 for generating chat completions, delivering insightful interactions based on the podcast's content.
-  - **Memory Management (InMemory)**: Maintains chat context through in-memory storage, supporting uninterrupted user experience.
-  - **Audio Processing (Whisper Model)**: Uses OpenAI's Whisper for accurate transcription of audio content, facilitating content analysis.
-
-- **Bot Commands**:
-  - `/upload_audio`: For uploading `.mp3` audio files to the server.
-  - `/clear`: To reset the in-memory chat list and start a new dialogue.
-  - `/help`: For a detailed list of commands and bot usage instructions.
-  - `/ask`: To prompt the bot for specific information based on the podcast's transcribed text.
-  - `/summarize`: To obtain a concise summary of the podcast's key points.
-  - `/purge`: To clear all messages in the channel for a clean start.
-
-To view the design system in the repository, navigate to `docs/design-system.png`.
-
 ## ✨ Features
 
 - **Audio Analysis**: Upload your podcast audio files and get a detailed analysis of the content.
@@ -64,6 +30,14 @@ To view the design system in the repository, navigate to `docs/design-system.png
 - **Summarization**: Get concise summaries of your podcast episodes, highlighting the key points.
 - **Interactive Q&A**: Ask questions about the podcast content and receive accurate answers.
 - **Support for Multiple Audio Formats**: Supports mp3, wav, and ogg audio formats.
+
+## 🔧 Interaction Design & Architecture
+
+Our Podcast Agent Bot integrates real-time WebSocket communication with Discord's API, allowing users to start conversations, upload audio files, and interact with podcast content seamlessly. It harnesses OpenAI's GPT-4 for intelligent chat completion and uses Whisper for accurate audio transcriptions. The bot's memory system ensures continuity in conversations. Commands like /upload_audio, /clear, and /summarize empower users to fully engage with and analyze their favorite podcasts within Discord. This diagram in docs/design-system.png gives a visual overview of the bot's structure and interaction flow.
+
+![Podcast Agent Bot Design System](docs/design-system.png)
+
+To view the design system in the repository, navigate to `docs/design-system.png`.
 
 ## 🚀 Getting Started
 
@@ -134,29 +108,16 @@ Utilize the following commands to interact with the bot:
 
 - `/ask [question]`: Inquire about specific podcast content.
 - `/help`: Display a list of available commands and their functions.
-- `/clear
-
-`: Clear the chat history to clean up the conversation space.
-
+- `/clear`: Clear the chat history to clean up the conversation space.
 - `/upload_audio [file] [language]`: Upload an audio file for detailed transcription and analysis.
 - `/purge`: Remove all messages in the current channel for a fresh start.
 - `/summarize`: Summarize the main points extracted from the uploaded audio file.
 
-This guide aims to help users navigate through the bot's functionalities efficiently, enhancing the overall user experience.
-
 ## 💻 Technologies Used
 
-### 🔑 OpenAI API
-
-The Podcast Agent Bot leverages the OpenAI API to process and analyze the transcribed podcast data. It uses advanced language models to generate summaries, answer questions, and provide insights into the podcast content, enhancing the user's understanding and engagement with the material.
-
-### 🗣 Whisper by OpenAI
-
-Whisper, a robust speech-to-text model developed by OpenAI, is used to transcribe audio files into text. This technology ensures accurate transcription of podcasts, allowing the bot to analyze and interact with the spoken content effectively.
-
-### 🤖 Discord API for Python
-
-The bot is integrated into Discord using the Python Discord API, which allows it to operate within a Discord server. This API facilitates the bot's interaction with users, managing commands, uploading audio files, and providing responses directly within the Discord platform.
+- 📊 Utilizes OpenAI's GPT-4 via the API for advanced content analysis and engagement.
+- 🎙️ Employs OpenAI's Whisper for high-accuracy podcast transcription.
+- 🤖 Integrates with Discord using the Python API for interactive bot capabilities.
 
 ## 🤝 Contributing
 
