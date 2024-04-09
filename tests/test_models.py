@@ -21,8 +21,8 @@ def test_model_instance(model):
     assert isinstance(model, OpenAIModel)
 
 
-def test_str_method(model):
-    assert str(model) == f"OpenAIModel: {model.model_engine}"
+def test_str_model_method(model):
+    assert str(model) == f"Model: OpenAI. Engine: {model.model_engine}. Temperature: {model.temperature}. Max Tokens: {model.max_tokens}."
 
 
 def test_chat_completion(model):

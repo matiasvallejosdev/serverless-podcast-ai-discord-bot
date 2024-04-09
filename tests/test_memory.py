@@ -96,7 +96,7 @@ def test_remove_memory_invalid_user_id(inmemory, user_id):
     user_id_invalid = 1234
     inmemory._initialize(user_id)
     memory = inmemory.remove(user_id_invalid)
-    assert memory == f"'User {user_id_invalid} does not exist.'"
+    assert memory == f"User {user_id_invalid} does not exist."
 
 
 def test_get_memory(inmemory, user_id, message):
