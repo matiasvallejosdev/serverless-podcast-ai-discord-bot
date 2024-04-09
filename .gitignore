@@ -162,3 +162,5 @@ cython_debug/
 __pycache__
 venv
 .tmp.py
+
+.vscode
