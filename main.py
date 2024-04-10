@@ -15,7 +15,7 @@ from src.discord import DiscordClient, DiscordSender
 from src.podcast import PodcastGpt
 
 from data.discord import commands_info, usage_info, copyright_info
-from data.prompts import summarize_prompt
+from data.prompts import summarize_prompt, pre_transcription_prompt
 
 load_dotenv(find_dotenv())
 
@@ -162,20 +162,21 @@ def run():
             )
             return
 
+        # After checking the file format and language, start processing the audio file
         await interaction.response.defer()
         send = [
-            f"Received audio file: {attachment.filename}",
-            "Processing. Please wait...",
+            f"Transcribing the audio file {attachment.filename}",
+            "Please wait. It may take a few minutes to transcribe the audio file...",
         ]
         send_out = "\n".join(send)
         await sender.send_message(interaction, user_id, "/upload_audio", send_out)
 
-        attachment.filename = (
-            f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{attachment.filename}"
-        )
-        audio_path = os.path.join(podcast_gpt.audio_base_path, attachment.filename)
-
+        # Save the audio file to the disk
         try:
+            attachment.filename = (
+                f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{attachment.filename}"
+            )
+            audio_path = os.path.join(podcast_gpt.audio_base_path, attachment.filename)
             await attachment.save(audio_path)
         except IOError as e:
             await sender.send_message(
@@ -186,9 +187,10 @@ def run():
             )
             return
 
+        # Transcribe the audio file using the selected language
         try:
-            audio_text = await podcast_gpt.audio.transcript_async(
-                audio_path, language, False
+            audio_text = await podcast_gpt.get_transcriptions_async(
+                attachment.filename, language, False
             )
         except Exception as e:
             await sender.send_message(
@@ -202,7 +204,6 @@ def run():
         name = os.path.splitext(attachment.filename)[0]
         transcript_filename = podcast_gpt.save_transcription(audio_text, name)
         transcript_path = os.path.join(
-            # get file name without extension
             podcast_gpt.transcription_base_path,
             transcript_filename,
         )
@@ -212,8 +213,8 @@ def run():
         send_out = "\n".join(send)
         await sender.send_message(interaction, user_id, "/upload_audio", send_out)
 
+        # Send the text file to the user with the transcription
         try:
-            # Send the text file
             file = discord.File(transcript_path, filename=transcript_filename)
             await interaction.followup.send(file=file)
         except CommandInvokeError as e:
@@ -223,25 +224,30 @@ def run():
                 "/upload_audio",
                 f"Failed to send the transcription file: {e}",
             )
-        try:
-            last_message = []
-            response = podcast_gpt.get_response(user_id, summarize_prompt)
 
-            if response["status"] == "success":
-                last_message.append(response["content"])
-            else:
+        # Initialize GPT prompt with the audio transcription
+        try:
+            # Pre-transcription prompt
+            response = podcast_gpt.get_response(user_id, pre_transcription_prompt)
+            if response["status"] == "error":
                 error = response["content"]
                 raise Exception(error)
 
+            # get the audio text from transcription_path
+            # TODO: TEMP
+            with open(transcript_path) as f:
+                audio_text = f.read()
+
+            # Send the audio text to the GPT model
             response = podcast_gpt.get_response(user_id, audio_text)
             if response["status"] == "success":
-                last_message.append(response["content"])
+                await sender.send_message(
+                    interaction, user_id, "/upload_audio", response["content"]
+                )
             else:
                 error = response["content"]
                 raise Exception(error)
 
-            send_out = "\n".join(last_message)
-            await sender.send_message(interaction, user_id, "/upload_audio", send_out)
         except Exception as e:
             await sender.send_message(
                 interaction,
@@ -285,8 +291,7 @@ def run():
         await interaction.response.defer()
 
         try:
-            prompt = "Based on the audio transcription provided, distill the key points and summarize the main message."
-            response = podcast_gpt.get_response(user_id, prompt)
+            response = podcast_gpt.get_response(user_id, summarize_prompt)
             if response["status"] == "success":
                 await sender.send_message(
                     interaction, user_id, "/summarize", response["content"]
