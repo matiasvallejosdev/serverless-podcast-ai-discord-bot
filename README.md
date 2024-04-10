@@ -1,7 +1,8 @@
 # 🤖 Podcast Agent Bot
 
-[![Python application](https://github.com/matiasvallejosdev/podcast-agent-gpt-discord-bot-ai/actions/workflows/python-app.yml/badge.svg)](https://github.com/matiasvallejosdev/podcast-agent-gpt-discord-bot-ai/actions/workflows/python-app.yml)
+[![GitHub top language](https://img.shields.io/github/languages/top/matiasvallejosdev/podcast-agent-gpt-discord-bot-ai?color=1081c2)](https://github.com/matiasvallejosdev/podcast-agent-gpt-discord-bot-ai/search?l=c%23)
 ![License](https://img.shields.io/github/license/matiasvallejosdev/podcast-agent-gpt-discord-bot-ai?label=license&logo=github&color=f80&logoColor=fff)
+[![Python application](https://github.com/matiasvallejosdev/podcast-agent-gpt-discord-bot-ai/actions/workflows/python-app.yml/badge.svg)](https://github.com/matiasvallejosdev/podcast-agent-gpt-discord-bot-ai/actions/workflows/python-app.yml)
 
 ## Introduction
 
@@ -15,8 +16,7 @@ The Podcast Agent Bot is an innovative Discord bot designed to analyze and summa
   - [🎯 Purpose](#-purpose)
   - [✨ Features](#-features)
   - [🔧 Interaction Design \& Architecture](#-interaction-design--architecture)
-  - [🚀 Getting Started](#-getting-started)
-    - [📥 Installation](#-installation)
+  - [📥 Installation](#-installation)
   - [❓ How to use it?](#-how-to-use-it)
     - [📖 User Guide](#-user-guide)
     - [⌨️ Commands](#️-commands)
@@ -40,15 +40,11 @@ The creation of the Podcast Agent Bot was inspired by the challenge of consuming
 
 ## 🔧 Interaction Design & Architecture
 
-Our Podcast Agent Bot integrates real-time WebSocket communication with Discord's API, allowing users to start conversations, upload audio files, and interact with podcast content seamlessly. It harnesses OpenAI's GPT-4 for intelligent chat completion and uses Whisper for accurate audio transcriptions. The bot's memory system ensures continuity in conversations. Commands like /upload_audio, /clear, and /summarize empower users to fully engage with and analyze their favorite podcasts within Discord. This diagram in docs/design-system.png gives a visual overview of the bot's structure and interaction flow.
+Podcast Agent Bot integrates real-time WebSocket communication with Discord's API, allowing users to start conversations, upload audio files, and interact with podcast content seamlessly. It harnesses OpenAI's GPT-4 for intelligent chat completion and uses Whisper for accurate audio transcriptions. The bot's memory system ensures continuity in conversations. Commands like `/upload_audio`, `/clear`, and `/summarize` empower users to fully engage with and analyze their favorite podcasts within Discord. This diagram gives a visual overview of the bot's structure and interaction flow.
 
 ![Podcast Agent Bot Design System](docs/design-system.png)
 
-To view the design system in the repository, navigate to `docs/design-system.png`.
-
-## 🚀 Getting Started
-
-### 📥 Installation
+## 📥 Installation
 
 To set up the Podcast Agent Bot for development and testing, follow these steps:
 
@@ -123,17 +119,6 @@ Utilize the following commands to interact with the bot:
 ## 🛠️ Pre-Prompted Model Configuration
 
 To enhance the Podcast Agent Bot's capabilities, we've crafted a specialized assistant profile using a `system.json` configuration. This profile informs the bot's behavior and sets the stage for its advanced analytical tasks.
-
-The JSON configuration for the assistant is as follows:
-
-```json
-{
-    "role": "assistant",
-    "content": "You are my personal assistant for analyzing podcasts, skilled in reading and analyzing unstructured texts, including conversations. Your role is to generate summaries, extract important information, and identify main themes, key excerpts, and mentions of notable figures or places, without inventing information. You're equipped to handle various topics and styles, detect languages, analyze tone and sentiment, identify trends, and provide summaries and links to related external resources. Additionally, you possess voice recognition capabilities to process audio format podcasts and connect with relevant external content like websites, articles, or books related to the podcast topics."
-}
-```
-
-This pre-prompt setup ensures that the bot understands its role as an assistant tasked with analyzing podcasts. It's pre-programmed to read and analyze unstructured text, generate comprehensive summaries, and pull out crucial information such as themes, key excerpts, and mentions of significant figures or places. The configuration reinforces the assistant's commitment to accuracy, refraining from fabricating information, and the ability to connect with external resources relevant to the podcast's subject matter. The inclusion of voice recognition capabilities signifies its readiness to handle audio format inputs, making it a versatile tool for podcast enthusiasts and researchers alike.
 
 ## 💻 Technologies Used
 
