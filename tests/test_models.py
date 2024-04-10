@@ -42,7 +42,7 @@ def test_chat_completion_invalid_messages(model):
     response = model.chat_completion(messages)
     assert response["status"] == "error"
     assert response["role"] == "program"
-    assert "Messages should not be empty" in response["content"]
+    assert "Messages should be a list" in response["content"]
 
 
 def test_chat_completion_api_error(model):
