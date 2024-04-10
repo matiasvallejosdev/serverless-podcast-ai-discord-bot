@@ -36,5 +36,9 @@ jobs:
     - name: Test with pytest
       env:
         PYTHONPATH: ${{ github.workspace }}
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        OPENAI_GPTMODEL: ${{ secrets.OPENAI_GPTMODEL }}
+        OPENAI_TEMPERATURE: ${{ secrets.OPENAI_TEMPERATURE }}
+        OPENAI_TOKENS: ${{ secrets.OPENAI_TOKENS }}
       run: |
         pytest
