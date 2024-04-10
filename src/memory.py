@@ -17,9 +17,9 @@ class InMemory(MemoryInterface):
     def __init__(self, system_message: str = None):
         self.storage = defaultdict(list)
         self.system_message = system_message
-        
+
     def __str__(self) -> str:
-        return f"Storage: InMemory. Be careful, it will be lost when the program ends."
+        return "Storage: InMemory. Be careful, it will be lost when the program ends."
 
     def _initialize(self, user_id: str):
         if isinstance(self.system_message, Dict):

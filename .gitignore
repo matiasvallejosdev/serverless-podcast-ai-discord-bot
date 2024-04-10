@@ -164,3 +164,6 @@ venv
 .tmp.py
 
 .vscode
+
+files/audio/*
+files/transcriptions/*

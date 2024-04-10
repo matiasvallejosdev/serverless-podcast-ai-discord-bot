@@ -19,13 +19,24 @@ class DiscordSender:
         try:
             print(f"{user_id} request: {receive}, response: {message}")
 
-            # Check if interaction has been responded to
-            if interaction.response.is_done():
-                # Use follow-up for already acknowledged interactions
-                await interaction.followup.send(message)
-            else:
-                # Acknowledge the interaction if not already done
-                await interaction.response.send_message(message)
+            # Function to send message chunks
+            async def send_chunks(chunks):
+                for chunk in chunks:
+                    if interaction.response.is_done():
+                        await interaction.followup.send(chunk)
+                    else:
+                        await interaction.response.send_message(chunk)
+                        # Once the initial response is sent, further messages should be follow-ups
+                        interaction.response._responded = True
+
+            # Split message into chunks of 2000 characters
+            chunk_size = 2000
+            message_chunks = [
+                message[i:i + chunk_size] for i in range(0, len(message), chunk_size)
+            ]
+
+            # Send all chunks
+            await send_chunks(message_chunks)
         except Exception as e:
             print(f"Error sending message: {e}")
 
@@ -51,7 +62,9 @@ class DiscordClient(commands.Bot):
         self.name = name
         self.usage = usage
         self.copyright = copyright
-        self.activity = discord.Activity(type=discord.ActivityType.watching, name=self.name)
+        self.activity = discord.Activity(
+            type=discord.ActivityType.watching, name=self.name
+        )
 
     def __str__(self):
         return f"Discord Client ({self.name}): {self.guild_id}, {self.guild_channel}"
@@ -79,7 +92,7 @@ class DiscordClient(commands.Bot):
                     self.__str__(),
                     f"{guild.name} (id: {guild.id})\n"
                     f"Discord Version: {discord.__version__}\n"
-                    f"Commands: {str(len(synced))}\n"
+                    f"Commands: {str(len(synced))}\n",
                 )
                 break
             else:

@@ -13,7 +13,9 @@ from src.memory import InMemory
 from src.discord import DiscordClient, DiscordSender
 
 from src.podcast import PodcastGpt
+
 from data.discord import commands_info, usage_info, copyright_info
+from data.prompts import summarize_prompt
 
 load_dotenv(find_dotenv())
 
@@ -149,7 +151,7 @@ def run():
                 "Please upload a valid audio file in mp3, wav, or ogg format.",
             )
             return
-        
+
         language = language.lower()
         if language not in ["en", "es"]:
             await sender.send_message(
@@ -161,7 +163,10 @@ def run():
             return
 
         await interaction.response.defer()
-        send = [f"Received audio file: {attachment.filename}", "Processing. Please wait..."]
+        send = [
+            f"Received audio file: {attachment.filename}",
+            "Processing. Please wait...",
+        ]
         send_out = "\n".join(send)
         await sender.send_message(interaction, user_id, "/upload_audio", send_out)
 
@@ -220,9 +225,7 @@ def run():
             )
         try:
             last_message = []
-            response = podcast_gpt.get_response(
-                user_id, "I will send you the transcription text for this audio. When I send the text don't give me a resume. Only said me if you want to ask me something."
-            )
+            response = podcast_gpt.get_response(user_id, summarize_prompt)
 
             if response["status"] == "success":
                 last_message.append(response["content"])
@@ -236,7 +239,7 @@ def run():
             else:
                 error = response["content"]
                 raise Exception(error)
-            
+
             send_out = "\n".join(last_message)
             await sender.send_message(interaction, user_id, "/upload_audio", send_out)
         except Exception as e:
@@ -261,7 +264,7 @@ def run():
         ]
         send_out = "\n".join(send)
         await sender.send_message(interaction, user_id, "/upload_audio", send_out)
-        
+
         send = "I'm here to help you understand the content better."
         await sender.send_message(interaction, user_id, "/upload_audio", send)
 

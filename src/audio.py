@@ -6,7 +6,7 @@ import asyncio
 class AudioInterface:
     def transcript_async(self, path: str, language="es", fp16=False) -> str:
         """Transcribe an audio file asynchronously using the Whisper model using asyncio and transcribe method.
-        
+
         Args:
             path (str): Path to the audio file.
             language (str, optional): Language model selected to transcribe. Defaults to "es".
@@ -46,7 +46,7 @@ class WhisperModel(AudioInterface):
         Initializes the WhisperModel object and loads the Whisper model.
         """
         self.model = whisper.load_model("base")
-        
+
     def __str__(self) -> str:
         return "Audio: Whisper Model powered by OpenAI."
 

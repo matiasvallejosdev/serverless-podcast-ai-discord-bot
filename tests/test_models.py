@@ -22,7 +22,10 @@ def test_model_instance(model):
 
 
 def test_str_model_method(model):
-    assert str(model) == f"Model: OpenAI. Engine: {model.model_engine}. Temperature: {model.temperature}. Max Tokens: {model.max_tokens}."
+    assert (
+        str(model)
+        == f"Model: OpenAI. Engine: {model.model_engine}. Temperature: {model.temperature}. Max Tokens: {model.max_tokens}."
+    )
 
 
 def test_chat_completion(model):
@@ -42,21 +45,13 @@ def test_chat_completion_invalid_messages(model):
     assert "Messages should not be empty" in response["content"]
 
 
-def test_chat_completion_invalid_messages(model):
-    messages = "Hello, how are you?"
-    response = model.chat_completion(messages)
-    assert response["status"] == "error"
-    assert response["role"] == "program"
-    assert "Messages should be a list" in response["content"]
-
-
 def test_chat_completion_api_error(model):
     # remove the api key to raise an exception
     model.model_engine = ""
     messages = [{"role": "user", "content": "Hello, how are you?"}]
     response = model.chat_completion(messages)
     assert response["status"] == "error"
-    assert response["role"] is "assistant"
+    assert response["role"] == "assistant"
 
 
 def test_chat_completion_empty_content(model):

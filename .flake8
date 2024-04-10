@@ -1,0 +1,8 @@
+[flake8]
+# Exclude the virtual environment directory from checks
+exclude =
+    ./venv/*
+    data/*
+
+# Set the maximum allowed line length to 100 characters
+max-line-length = 200

@@ -2,6 +2,7 @@ from typing import List
 import openai
 import json
 
+
 class ModelInterface:
     def chat_completion(self, messages: List) -> str:
         """Chat completion to gpt using openai api with a model.
@@ -34,7 +35,7 @@ class OpenAIModel(ModelInterface):
 
             if not isinstance(messages, List):
                 raise ValueError("Messages should be a list.")
-            
+
             if not messages[0].get("content"):
                 raise ValueError("Content should not be empty.")
 
@@ -68,7 +69,7 @@ class OpenAIModel(ModelInterface):
             # If the error message is JSON-like, you can parse it to extract detailed information
             try:
                 error_details = json.loads(error_message_str.split(" - ", 1)[1])
-                error_message = error_details.get('error', {}).get('message', '')
+                error_message = error_details.get("error", {}).get("message", "")
             except (IndexError, ValueError, KeyError):
                 # Fallback to the entire error string if parsing fails
                 error_message = error_message_str

@@ -123,5 +123,9 @@ def test_get_memory_invalid_user_id(inmemory, user_id):
 
     assert str(e.value) == f"'User {user_id_invalid} does not exist.'"
 
+
 def test_inmemory_str(inmemory):
-    assert str(inmemory) == "Storage: InMemory. Be careful, it will be lost when the program ends."
+    assert (
+        str(inmemory)
+        == "Storage: InMemory. Be careful, it will be lost when the program ends."
+    )

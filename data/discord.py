@@ -19,6 +19,4 @@ usage_info = [
 ]
 
 # Copyright and project information
-copyright_info = [
-    "Created by **Matias Vallejos**. OpenSource project."
-]
+copyright_info = ["Created by **Matias Vallejos**. OpenSource project."]

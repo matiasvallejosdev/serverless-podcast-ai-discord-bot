@@ -24,7 +24,7 @@ class PodcastGpt:
 
         os.makedirs(self.audio_base_path, exist_ok=True)
         os.makedirs(self.transcription_base_path, exist_ok=True)
-        
+
     def __str__(self) -> str:
         message = [
             self.model.__str__(),
@@ -54,7 +54,9 @@ class PodcastGpt:
         """
         self.memory.remove(user_id)
 
-    async def get_transcriptions_async(self, file_name: str, language: str, fp16: bool) -> str:
+    async def get_transcriptions_async(
+        self, file_name: str, language: str, fp16: bool
+    ) -> str:
         """Get transcriptions from an audio file asynchronously
 
         Args:
