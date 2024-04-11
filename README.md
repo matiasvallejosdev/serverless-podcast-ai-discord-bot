@@ -8,24 +8,6 @@
 
 The Podcast Agent Bot is an innovative Discord bot designed to analyze and summarize podcasts. Utilizing OpenAI's powerful GPT and Whisper models, it offers users a seamless way to interact with audio content, providing insights, summaries, and responses to queries based on the podcast's content.
 
-## 📜 Contents
-
-- [🤖 Podcast Agent Bot](#-podcast-agent-bot)
-  - [Introduction](#introduction)
-  - [📜 Contents](#-contents)
-  - [🎯 Purpose](#-purpose)
-  - [✨ Features](#-features)
-  - [🔧 Interaction Design \& Architecture](#-interaction-design--architecture)
-  - [📥 Installation](#-installation)
-  - [❓ How to use it?](#-how-to-use-it)
-    - [📖 User Guide](#-user-guide)
-    - [⌨️ Commands](#️-commands)
-  - [🛠️ Pre-Prompted Model Configuration](#️-pre-prompted-model-configuration)
-  - [💻 Technologies Used](#-technologies-used)
-  - [🤝 Contributing](#-contributing)
-  - [📞 Contact](#-contact)
-  - [📄 License](#-license)
-
 ## 🎯 Purpose
 
 The creation of the Podcast Agent Bot was inspired by the challenge of consuming and retaining the wealth of information available in podcasts. Often, while listening to podcasts, taking notes and revisiting key points later can be cumbersome. This bot simplifies the process by providing tools to summarize, highlight important information, translate content, and offer an interactive Q&A feature based on the podcast, making the wealth of knowledge in podcasts more accessible and engaging.
