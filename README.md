@@ -2,7 +2,11 @@
 
 [![GitHub top language](https://img.shields.io/github/languages/top/matiasvallejosdev/podcast-agent-gpt-discord-bot-ai?color=1081c2)](https://github.com/matiasvallejosdev/podcast-agent-gpt-discord-bot-ai/search?l=c%23)
 ![License](https://img.shields.io/github/license/matiasvallejosdev/podcast-agent-gpt-discord-bot-ai?label=license&logo=github&color=f80&logoColor=fff)
-[![Python application](https://github.com/matiasvallejosdev/podcast-agent-gpt-discord-bot-ai/actions/workflows/python-app.yml/badge.svg)](https://github.com/matiasvallejosdev/podcast-agent-gpt-discord-bot-ai/actions/workflows/python-app.yml)
+![Forks](https://img.shields.io/github/forks/matiasvallejosdev/podcast-agent-gpt-discord-bot-ai.svg)
+![Stars](https://img.shields.io/github/stars/matiasvallejosdev/podcast-agent-gpt-discord-bot-ai.svg)
+![Watchers](https://img.shields.io/github/watchers/matiasvallejosdev/podcast-agent-gpt-discord-bot-ai.svg)
+
+Experience Podcast Agent Bot in action: [View Demo](https://youtu.be/bBJazG26p0k)
 
 ## 📘 Introduction
 
@@ -114,11 +118,12 @@ The Podcast Agent Bot is an open-source project, and contributions are welcome. 
 
 ## 📞 Contact
 
-Created by [Matias Vallejos](https://matiasvallejos.com/) - feel free to contact me:
+If you have any questions or need further assistance, you can contact the project maintainer:
 
-- 🌐 [Website](https://matiasvallejos.com/)
-- 🔗 [LinkedIn](https://linkedin.com/in/matiasvallejos/)
-- 📁 [GitHub](https://github.com/matiasvallejosdev)
+- Name: Matias Vallejos
+- 🌐 [matiasvallejos.com](https://matiasvallejos.com/)
+
+Feel free to reach out if you have any inquiries or need any additional information about the project.
 
 ## 📄 License
 
