@@ -6,7 +6,7 @@
 ![Stars](https://img.shields.io/github/stars/matiasvallejosdev/podcast-agent-gpt-discord-bot-ai.svg)
 ![Watchers](https://img.shields.io/github/watchers/matiasvallejosdev/podcast-agent-gpt-discord-bot-ai.svg)
 
-Experience Podcast Agent Bot in action: [View Demo](https://youtu.be/bBJazG26p0k)
+🚀 Experience Podcast Agent Bot in action: [View Demo](https://youtu.be/bBJazG26p0k)
 
 ## 📘 Introduction
 
