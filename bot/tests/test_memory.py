@@ -1,5 +1,5 @@
 import pytest
-from src.memory import InMemory
+from backend.services.memory.src.memory import InMemory
 
 
 @pytest.fixture

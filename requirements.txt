@@ -48,3 +48,4 @@ tqdm==4.66.2
 typing_extensions==4.10.0
 urllib3==2.2.1
 yarl==1.9.4
+boto3==1.34.94

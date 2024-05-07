@@ -3,10 +3,10 @@ import pytest
 
 from dotenv import load_dotenv, find_dotenv
 
-from src.models import OpenAIModel
+from backend.services.gpt.src.models import OpenAIModel
 from src.audio import WhisperModel
-from src.memory import InMemory
-from src.utils import read_json
+from backend.services.memory.src.memory import InMemory
+from common.utils.utils import read_json
 
 from src.podcast import PodcastGpt
 

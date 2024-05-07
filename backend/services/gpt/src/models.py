@@ -39,7 +39,7 @@ class OpenAIModel(ModelInterface):
             if not messages[0].get("content"):
                 raise ValueError("Content should not be empty.")
 
-            chat = openai.chat.completions.create(
+            chat = openai.ChatCompletion.create(
                 model=self.model_engine,
                 messages=messages,
                 temperature=self.temperature,
@@ -62,7 +62,6 @@ class OpenAIModel(ModelInterface):
                     "role": "program",
                     "content": "No response from model. Please try again.",
                 }
-
         except openai.OpenAIError as e:
             # Convert the exception to a string to get the error message
             error_message_str = str(e)

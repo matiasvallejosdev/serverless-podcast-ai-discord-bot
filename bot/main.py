@@ -5,11 +5,10 @@ from discord.ext.commands import CommandInvokeError
 from datetime import datetime
 
 from dotenv import load_dotenv, find_dotenv
-from src.utils import read_json
+from common.utils.utils import read_json
 
 from src.audio import WhisperModel
-from src.models import OpenAIModel
-from src.memory import InMemory
+from backend.services.memory.src.memory import InMemory
 from src.discord import DiscordClient, DiscordSender
 
 from src.podcast import PodcastGpt
@@ -20,12 +19,6 @@ from data.prompts import summarize_prompt, pre_transcription_prompt
 load_dotenv(find_dotenv())
 
 # Initialize models
-model = OpenAIModel(
-    api_key=os.getenv("OPENAI_API_KEY"),
-    model_engine=os.getenv("OPENAI_GPTMODEL"),
-    temperature=int(os.getenv("OPENAI_TEMPERATURE")),
-    max_tokens=int(os.getenv("OPENAI_TOKENS")),
-)
 audio = WhisperModel()
 system = read_json("system.json")
 inmemory = InMemory(system_message=system)
@@ -127,7 +120,6 @@ def run():
             send_out = "\n".join(send)
             await sender.send_message(interaction, user_id, "/clear", send_out)
 
-    # Upload audio file command
     @client.tree.command(
         name="upload_audio",
         description="Upload an audio file. The bot will transcribe it based on the selected language.",
@@ -138,141 +130,60 @@ def run():
         user_id = interaction.user.id
         channel_id = interaction.channel_id
 
-        if client.is_channel_allowed(str(channel_id)) is False:
-            send = "You're not allowed to use this command in this channel."
-            await sender.send_message(interaction, user_id, "/upload_audio", send)
+        sender = DiscordSender()
+
+        if not client.is_channel_allowed(str(channel_id)):
+            await sender.send_message(interaction, user_id, "/upload_audio", "You're not allowed to use this command in this channel.")
             return
 
         if not attachment.filename.lower().endswith((".mp3", ".wav", ".ogg")):
-            await sender.send_message(
-                interaction,
-                user_id,
-                "/upload_audio",
-                "Please upload a valid audio file in mp3, wav, or ogg format.",
-            )
+            await sender.send_message(interaction, user_id, "/upload_audio", "Please upload a valid audio file in mp3, wav, or ogg format.")
             return
 
         language = language.lower()
         if language not in ["en", "es"]:
-            await sender.send_message(
-                interaction,
-                user_id,
-                "/upload_audio",
-                "Please select a valid language: `en` for English or `es` for Spanish.",
-            )
+            await sender.send_message(interaction, user_id, "/upload_audio", "Please select a valid language: `en` for English or `es` for Spanish.")
             return
 
-        # After checking the file format and language, start processing the audio file
+        # Defer the interaction response as processing starts
         await interaction.response.defer()
-        send = [
-            f"Transcribing the audio file {attachment.filename}",
-            "Please wait. It may take a few minutes to transcribe the audio file...",
-        ]
-        send_out = "\n".join(send)
-        await sender.send_message(interaction, user_id, "/upload_audio", send_out)
 
-        # Save the audio file to the disk
-        try:
-            attachment.filename = (
-                f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{attachment.filename}"
-            )
-            audio_path = os.path.join(podcast_gpt.audio_base_path, attachment.filename)
-            await attachment.save(audio_path)
-        except IOError as e:
-            await sender.send_message(
-                interaction,
-                user_id,
-                "/upload_audio",
-                f"Failed to save the audio file: {e}",
-            )
-            return
+        # Show typing indicator while processing the audio file
+        async with interaction.channel.typing():
+            try:
+                # Process to save and transcribe the audio
+                attachment.filename = f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{attachment.filename}"
+                audio_path = os.path.join(podcast_gpt.audio_base_path, attachment.filename)
+                await attachment.save(audio_path)
+                audio_text = await podcast_gpt.get_transcriptions_async(attachment.filename, language, False)
+                name = os.path.splitext(attachment.filename)[0]
+                transcript_filename = podcast_gpt.save_transcription(audio_text, name)
+                transcript_path = os.path.join(podcast_gpt.transcription_base_path, transcript_filename)
+                
+                # Sending transcription file
+                file = discord.File(transcript_path, filename=transcript_filename)
+                await interaction.followup.send("Audio transcription completed. Sending the transcription file.", file=file)
+                
+                # Pre-transcription prompt
+                response = podcast_gpt.get_response(user_id, pre_transcription_prompt)
+                if response["status"] == "error":
+                    error = response["content"]
+                    raise Exception(error)
 
-        # Transcribe the audio file using the selected language
-        try:
-            audio_text = await podcast_gpt.get_transcriptions_async(
-                attachment.filename, language, False
-            )
-        except Exception as e:
-            await sender.send_message(
-                interaction,
-                user_id,
-                "/upload_audio",
-                f"Failed to transcribe the audio file: {e}",
-            )
-            return
+                # Get the audio text from transcription_path
+                with open(transcript_path) as f:
+                    audio_text = f.read()
 
-        name = os.path.splitext(attachment.filename)[0]
-        transcript_filename = podcast_gpt.save_transcription(audio_text, name)
-        transcript_path = os.path.join(
-            podcast_gpt.transcription_base_path,
-            transcript_filename,
-        )
-        send = [
-            "Audio transcription completed. I will send you the transcription file.",
-        ]
-        send_out = "\n".join(send)
-        await sender.send_message(interaction, user_id, "/upload_audio", send_out)
-
-        # Send the text file to the user with the transcription
-        try:
-            file = discord.File(transcript_path, filename=transcript_filename)
-            await interaction.followup.send(file=file)
-        except CommandInvokeError as e:
-            await sender.send_message(
-                interaction,
-                user_id,
-                "/upload_audio",
-                f"Failed to send the transcription file: {e}",
-            )
-
-        # Initialize GPT prompt with the audio transcription
-        try:
-            # Pre-transcription prompt
-            response = podcast_gpt.get_response(user_id, pre_transcription_prompt)
-            if response["status"] == "error":
-                error = response["content"]
-                raise Exception(error)
-
-            # get the audio text from transcription_path
-            # TODO: TEMP
-            with open(transcript_path) as f:
-                audio_text = f.read()
-
-            # Send the audio text to the GPT model
-            response = podcast_gpt.get_response(user_id, audio_text)
-            if response["status"] == "success":
-                await sender.send_message(
-                    interaction, user_id, "/upload_audio", response["content"]
-                )
-            else:
-                error = response["content"]
-                raise Exception(error)
-
-        except Exception as e:
-            await sender.send_message(
-                interaction,
-                user_id,
-                "/upload_audio",
-                f"Failed to process the audio file: {e}",
-            )
-            await sender.send_message(
-                interaction,
-                user_id,
-                "/upload_audio",
-                "Please try again checking the audio file format and language.",
-            )
-            return
-
-        send = [
-            "Use the `/ask [question]` command to interact with me.",
-            "If you need a summary of the audio content, use the `/summarize` command."
-            "The `/clear` command will remove the chat history.",
-        ]
-        send_out = "\n".join(send)
-        await sender.send_message(interaction, user_id, "/upload_audio", send_out)
-
-        send = "I'm here to help you understand the content better."
-        await sender.send_message(interaction, user_id, "/upload_audio", send)
+                # Send the audio text to the GPT model
+                response = podcast_gpt.get_response(user_id, audio_text)
+                if response["status"] == "success":
+                    await sender.send_message(interaction, user_id, "/upload_audio", response["content"])
+                else:
+                    error = response["content"]
+                    raise Exception(error)
+            
+            except Exception as e:
+                await sender.send_message(interaction, user_id, "/upload_audio", f"An error occurred while processing the audio file: {e}")
 
     # Summarize
     @client.tree.command(

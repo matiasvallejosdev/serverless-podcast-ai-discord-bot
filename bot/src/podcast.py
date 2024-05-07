@@ -1,8 +1,8 @@
 import os
 from datetime import datetime
 
-from .models import ModelInterface
-from .memory import MemoryInterface
+from ...backend.services.gpt.src.models import ModelInterface
+from ...backend.services.memory.src.memory import MemoryInterface
 from .audio import AudioInterface
 
 

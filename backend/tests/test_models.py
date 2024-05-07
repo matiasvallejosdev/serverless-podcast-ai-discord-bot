@@ -1,5 +1,5 @@
 import pytest
-from src.models import OpenAIModel
+from backend.services.gpt.src.models import OpenAIModel
 
 from dotenv import load_dotenv, find_dotenv
 import os
