@@ -2,29 +2,15 @@
 
 [![GitHub top language](https://img.shields.io/github/languages/top/matiasvallejosdev/podcast-agent-gpt-discord-bot-ai?color=1081c2)](https://github.com/matiasvallejosdev/podcast-agent-gpt-discord-bot-ai/search?l=c%23)
 ![License](https://img.shields.io/github/license/matiasvallejosdev/podcast-agent-gpt-discord-bot-ai?label=license&logo=github&color=f80&logoColor=fff)
-[![Python application](https://github.com/matiasvallejosdev/podcast-agent-gpt-discord-bot-ai/actions/workflows/python-app.yml/badge.svg)](https://github.com/matiasvallejosdev/podcast-agent-gpt-discord-bot-ai/actions/workflows/python-app.yml)
+![Forks](https://img.shields.io/github/forks/matiasvallejosdev/podcast-agent-gpt-discord-bot-ai.svg)
+![Stars](https://img.shields.io/github/stars/matiasvallejosdev/podcast-agent-gpt-discord-bot-ai.svg)
+![Watchers](https://img.shields.io/github/watchers/matiasvallejosdev/podcast-agent-gpt-discord-bot-ai.svg)
 
-## Introduction
+🚀 Experience Podcast Agent Bot in action: [View Demo](https://youtu.be/bBJazG26p0k)
+
+## 📘 Introduction
 
 The Podcast Agent Bot is an innovative Discord bot designed to analyze and summarize podcasts. Utilizing OpenAI's powerful GPT and Whisper models, it offers users a seamless way to interact with audio content, providing insights, summaries, and responses to queries based on the podcast's content.
-
-## 📜 Contents
-
-- [🤖 Podcast Agent Bot](#-podcast-agent-bot)
-  - [Introduction](#introduction)
-  - [📜 Contents](#-contents)
-  - [🎯 Purpose](#-purpose)
-  - [✨ Features](#-features)
-  - [🔧 Interaction Design \& Architecture](#-interaction-design--architecture)
-  - [📥 Installation](#-installation)
-  - [❓ How to use it?](#-how-to-use-it)
-    - [📖 User Guide](#-user-guide)
-    - [⌨️ Commands](#️-commands)
-  - [🛠️ Pre-Prompted Model Configuration](#️-pre-prompted-model-configuration)
-  - [💻 Technologies Used](#-technologies-used)
-  - [🤝 Contributing](#-contributing)
-  - [📞 Contact](#-contact)
-  - [📄 License](#-license)
 
 ## 🎯 Purpose
 
@@ -132,11 +118,12 @@ The Podcast Agent Bot is an open-source project, and contributions are welcome. 
 
 ## 📞 Contact
 
-Created by [Matias Vallejos](https://matiasvallejos.com/) - feel free to contact me:
+If you have any questions or need further assistance, you can contact the project maintainer:
 
-- 🌐 [Website](https://matiasvallejos.com/)
-- 🔗 [LinkedIn](https://linkedin.com/in/matiasvallejos/)
-- 📁 [GitHub](https://github.com/matiasvallejosdev)
+- Name: Matias Vallejos
+- 🌐 [matiasvallejos.com](https://matiasvallejos.com/)
+
+Feel free to reach out if you have any inquiries or need any additional information about the project.
 
 ## 📄 License
 
