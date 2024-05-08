@@ -1,25 +1,37 @@
 import os
-import json
 import boto3
 
 from boto3.dynamodb.conditions import Attr, Key
-from common.utils.encoders import DecimalEncoder
+
+from common.utils.lambda_utils import load_path_parameter_from_event
+from common.utils.error_handler import (
+    error_response,
+    internal_server_error,
+    not_found_error,
+)
+from common.utils.response_utils import success_response
+
+table_name = os.getenv("MEMORY_TABLE_NAME")
+memory_table = boto3.resource("dynamodb").Table(table_name)
+
+
+def parse_and_validate(event):
+    user_id = int(event.get("pathParameters", {}).get("user_id"))
+    if not user_id:
+        raise ValueError("user_id is required")
+    user_id = int(user_id)
+    return user_id
+
+
+def clean_messages_items(message_items):
+    messages = [msg["message"] for msg in message_items if "message" in msg]
+    return messages
 
 
 def lambda_handler(event, context):
-    user_id = int(event.get("pathParameters", {}).get("user_id"))
-    if not user_id:
-        return {
-            "statusCode": 400,
-            "headers": {"Content-Type": "application/json"},
-            "body": json.dumps({"message": "session_id is required"}),
-        }
-
-    table_name = os.getenv("MEMORY_TABLE_NAME")
-    memory_table = boto3.resource("dynamodb").Table(table_name)
-
     try:
-        # Scan the table for all sessions where is_deleted is false
+        user_id = parse_and_validate(event)
+
         response = memory_table.scan(
             FilterExpression=Attr("is_deleted").eq(False)
             & Attr("sk").eq("METADATA")
@@ -27,15 +39,9 @@ def lambda_handler(event, context):
         )
         sessions_items = response.get("Items", [])
 
-        # If no sessions are found, return a 404
         if not sessions_items or len(sessions_items) == 0:
-            return {
-                "statusCode": 404,
-                "headers": {"Content-Type": "application/json"},
-                "body": json.dumps({"message": "No sessions found for this user"}),
-            }
+            return not_found_error()
 
-        # Optionally append messages for each session if needed
         for session in sessions_items:
             session_id = session["pk"]
             session.pop("user_id", None)
@@ -44,14 +50,7 @@ def lambda_handler(event, context):
                 & Key("sk").begins_with("MESSAGE_")
             )
             messages_items = messages_response.get("Items", [])
-            messages = [
-                {
-                    key: val
-                    for key, val in msg.items()
-                    if key == "message" or key == "sk"
-                }
-                for msg in messages_items
-            ]
+            messages = clean_messages_items(messages_items)
             session["messages"] = messages
 
         data = (
@@ -63,21 +62,9 @@ def lambda_handler(event, context):
             if sessions_items
             else {}
         )
+        body = {"user_id": user_id, "sessions": data}
+        return success_response(body)
+    except ValueError as e:
+        return error_response(str(e))
     except Exception as e:
-        return {
-            "statusCode": 500,
-            "headers": {"Content-Type": "application/json"},
-            "body": json.dumps({"message": "Error fetching sessions: " + str(e)}),
-        }
-
-    # Format the response body with the sessions data
-    response_body = json.dumps(
-        {"user_id": user_id, "sessions": data, "session_count": len(data)},
-        cls=DecimalEncoder,
-    )
-
-    return {
-        "statusCode": 200,
-        "headers": {"Content-Type": "application/json"},
-        "body": response_body,
-    }
+        return internal_server_error()

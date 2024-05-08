@@ -1,49 +1,50 @@
 import os
-import json
 import datetime
 import boto3
 
+from common.utils.error_handler import error_response, internal_server_error
+from common.utils.response_utils import success_response
 
-def lambda_handler(event, context):
-    if not event.get("queryStringParameters"):
-        return {
-            "statusCode": 400,
-            "body": json.dumps({"message": "Query parameters are missing."}),
-        }
+s3_client = boto3.client("s3")
+s3_bucket_name = os.getenv("S3_BUCKET_NAME")
 
-    # Extract parameters from the query string
-    query_params = event["queryStringParameters"]
+
+def parse_and_validate(event):
+    query_params = event.get("queryStringParameters", {})
     s3_key = query_params.get("key")
     s3_expiresin = query_params.get("expiresIn")
 
-    # Check if required parameters are provided
-    if not s3_key or not s3_expiresin:
-        return {
-            "statusCode": 400,
-            "body": json.dumps(
-                {
-                    "message": "You must include 'key' and 'expiresIn' in your query request."
-                }
-            ),
-        }
+    if not s3_key or s3_expiresin is None:
+        raise ValueError(
+            "Both 'key' and 'expiresIn' parameters are required in the query."
+        )
 
     try:
-        # Ensure expiresIn is an integer
         s3_expiresin = int(s3_expiresin)
     except ValueError:
-        return {
-            "statusCode": 400,
-            "body": json.dumps({"message": "expiresIn must be a valid integer."}),
-        }
+        raise ValueError("'expiresIn' must be a valid integer.")
 
-    # Get the S3 bucket name from environment variables
-    s3_bucket_name = os.getenv("S3_BUCKET_NAME")
+    if (
+        s3_expiresin <= 0 or s3_expiresin > 86400
+    ):  # Example: limits expiresIn to 24 hours
+        raise ValueError("'expiresIn' must be between 1 and 86400 seconds.")
 
-    # Generate the presigned URL
-    s3_client = boto3.client("s3")
-    url = s3_client.generate_presigned_post(
-        Bucket=s3_bucket_name, Key=s3_key, ExpiresIn=s3_expiresin
-    )
+    return s3_key, s3_expiresin
+
+
+def lambda_handler(event, context):
+    try:
+        s3_key, s3_expiresin = parse_and_validate(event)
+    except ValueError as e:
+        return error_response(str(e))
+
+    try:
+        # Generate the presigned URL
+        url = s3_client.generate_presigned_post(
+            Bucket=s3_bucket_name, Key=s3_key, ExpiresIn=s3_expiresin
+        )
+    except Exception as e:
+        return internal_server_error()
 
     body = {
         "url": url,
@@ -52,13 +53,4 @@ def lambda_handler(event, context):
         "created_at": datetime.datetime.now().isoformat(),
     }
 
-    response = {
-        "statusCode": 200,
-        "headers": {
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Headers": "*",
-            "Content-Type": "application/json",
-        },
-        "body": json.dumps(body),
-    }
-    return response
+    return success_response(body)

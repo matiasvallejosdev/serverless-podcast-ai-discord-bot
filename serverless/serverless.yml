@@ -49,6 +49,7 @@ functions:
       patterns:
         - "!**"
         - services/health/**
+        - common/**
   upload_url_s3:
     handler: services/files/get_upload_url_s3.lambda_handler
     description: Get expires URL to upload a file to AWS bucket.
@@ -64,6 +65,7 @@ functions:
       patterns:
         - "!**"
         - services/files/**
+        - common/**
   gpt_ask:
     handler: services/gpt/ask.lambda_handler
     description: Given a set of messages ask to chat gpt and respond with a message.
@@ -115,6 +117,7 @@ functions:
       patterns:
         - "!**"
         - services/memory/**
+        - common/**
   update_session_metadata:
     handler: services/memory/update_session_metadata.lambda_handler
     description: Update session metadata like 'title' or 'user_id'.
@@ -174,6 +177,7 @@ functions:
       patterns:
         - "!**"
         - services/memory/**
+        - common/**
 
 resources:
   Resources:

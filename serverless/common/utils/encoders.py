@@ -1,6 +1,7 @@
 import json
 from decimal import Decimal
 
+
 # Custom JSON Encoder for handling Decimal types from DynamoDB
 class DecimalEncoder(json.JSONEncoder):
     def default(self, obj):

@@ -1,62 +1,49 @@
 import os
-import json
 import boto3
 import datetime
 
 from boto3.dynamodb.conditions import Key, Attr
 
-from common.utils.lambda_utils import load_body_from_event, load_path_parameter_from_event
+from common.utils.lambda_utils import (
+    load_body_from_event,
+    load_path_parameter_from_event,
+)
+from common.utils.error_handler import error_response, internal_server_error
+from common.utils.response_utils import success_response
+
+table_name = os.getenv("MEMORY_TABLE_NAME")
+memory_table = boto3.resource("dynamodb").Table(table_name)
 
 
-def lambda_handler(event, context):
-    # Extract path parameters
+def parse_and_validate(event):
     session_id = load_path_parameter_from_event(event, "session_id")
     if not session_id:
-        return {
-            "statusCode": 400,
-            "headers": {"Content-Type": "application/json"},
-            "body": json.dumps({"message": "session_id is required"}),
-        }
-
+        raise ValueError("session_id is required")
     session_id = f"SESSION#{session_id}"
-    body = load_body_from_event(event)
 
-    # Check if the message fields are present in the request body
+    body = load_body_from_event(event)
     message = body.get("message")
     user_id = body.get("user_id")
     if not message or not user_id:
-        return {
-            "statusCode": 400,
-            "body": json.dumps({"message": "'message' and 'user_id' is required."}),
-        }
+        raise ValueError("'message' and 'user_id' is required.")
 
-    # Check the format of the message field
-    if "role" not in message or "content" not in message:
-        return {
-            "statusCode": 400,
-            "headers": {"Content-Type": "application/json"},
-            "body": json.dumps(
-                {"message": "Both role and content are required in the message"}
-            ),
-        }
+    if not message.get("role") or not message.get("content"):
+        raise ValueError("Both 'role' and 'content' are required in the message")
+    return session_id, message, user_id
 
-    # Prepare dynamodb resource and table
-    dynamodb = boto3.resource("dynamodb")
-    memory_table = dynamodb.Table(os.getenv("MEMORY_TABLE_NAME"))
 
-    # Generate a unique message ID, e.g., based on the current timestamp
-    message_id = f"MESSAGE_{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}"
-
-    # Prepare the item to be inserted into the table
-    item = {
-        "pk": session_id,  # Use the session_id as the partition key "pk
-        "sk": message_id,
-        "message": {"role": message["role"], "content": message["content"]},
-        "created_at": datetime.datetime.now().isoformat(),
-    }
-
+def lambda_handler(event, context):
     try:
-        # Check if the session exists if not create a new session
+        session_id, message, user_id = parse_and_validate(event)
+        message_id = f"MESSAGE_{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}"
+
+        item = {
+            "pk": session_id,
+            "sk": message_id,
+            "message": {"role": message["role"], "content": message["content"]},
+            "created_at": datetime.datetime.now().isoformat(),
+        }
+
         metadata_response = memory_table.query(
             KeyConditionExpression=Key("pk").eq(session_id) & Key("sk").eq("METADATA"),
             FilterExpression=Attr("is_deleted").eq(False) & Attr("is_deleted").exists(),
@@ -72,20 +59,9 @@ def lambda_handler(event, context):
             }
             memory_table.put_item(Item=metadata_item)
 
-        # Insert the item into DynamoDB
         memory_table.put_item(Item=item)
+        return success_response(item)
+    except ValueError as e:
+        return error_response(str(e))
     except Exception as e:
-        return {
-            "statusCode": 500,
-            "headers": {"Content-Type": "application/json"},
-            "body": json.dumps(
-                {"message": "Error querying session metadata", "error": str(e)}
-            ),
-        }
-
-    # Return success response
-    return {
-        "statusCode": 200,
-        "headers": {"Content-Type": "application/json"},
-        "body": json.dumps({"message": "Message added successfully!", "item": item}),
-    }
+        return internal_server_error()
