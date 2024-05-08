@@ -1,5 +1,6 @@
 from typing import Dict, List
 from collections import defaultdict
+import requests
 
 
 class MemoryInterface:
@@ -75,3 +76,32 @@ class InMemory(MemoryInterface):
             return f"User {user_id} does not exist."
 
         self.storage[user_id] = []
+
+
+class DynamoDB(MemoryInterface):
+    def __init__(self, system_message: str, base_url: str, api_key: str):
+        self.system_message = system_message
+        self.base_url = base_url
+        self.api_key = api_key
+
+        pass
+
+    def append(self, user_id: str, message: Dict, session_id: str) -> None:
+        session_id = f"SESSION#{session_id}"
+        path = f'{self.base_url}/sessions/{session_id}'
+        body = {
+            "user_id": user_id,
+            "message": message
+        }
+        headers = {
+            "x-api-key": self.api_key
+        }
+        response = requests.post(path, json=body, headers=headers)
+        if response.status_code != 200:
+            raise Exception("Failed to append the message.")
+
+    def get(self, user_id: str) -> str:
+        return ""
+
+    def remove(self, user_id: str) -> None:
+        pass

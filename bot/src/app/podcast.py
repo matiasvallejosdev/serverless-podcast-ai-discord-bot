@@ -1,20 +1,20 @@
 import os
 from datetime import datetime
 
-from ...backend.services.gpt.src.models import ModelInterface
-from ...backend.services.memory.src.memory import MemoryInterface
-from .audio import AudioInterface
+from ..persitance.memory import MemoryInterface
+from ..api.serverless import ServerlessInterface
+from ..audio.audio import AudioInterface
 
 
 class PodcastGpt:
     def __init__(
         self,
-        model: ModelInterface,
+        serverless_api: ServerlessInterface,
         memory: MemoryInterface,
         audio: AudioInterface,
         base_path: str,
     ):
-        self.model = model
+        self.serverless_api = serverless_api
         self.memory = memory
         self.audio = audio
         self.base_path = base_path
@@ -27,24 +27,22 @@ class PodcastGpt:
 
     def __str__(self) -> str:
         message = [
-            self.model.__str__(),
             self.memory.__str__(),
             self.audio.__str__(),
         ]
         return "\n".join(message)
 
-    def get_response(self, user_id: str, text: str) -> str:
+    async def get_response(self, user_id: str, text: str) -> str:
         # Appending the role and content to memory
         self.memory.append(user_id, {"role": "user", "content": text})
 
         # Generate AI Response
-        response = self.model.chat_completion(self.memory.get(user_id))
+        response = await self.serverless_api.chat_completion(self.memory.get(user_id))
+        last_message = response["last_message"]
 
         # Appending the role and content to memory
-        self.memory.append(
-            user_id, {"role": response["role"], "content": response["content"]}
-        )
-        return response
+        self.memory.append(user_id, last_message)
+        return last_message
 
     def clean_history(self, user_id: str) -> None:
         """Using the memory interface to clean the history of a user.
