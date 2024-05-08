@@ -23,9 +23,18 @@ def parse_and_validate(event):
     return user_id
 
 
-def clean_messages_items(message_items):
+def clean_messages_and_metadata_items(message_items, metadata_items):
+    # Extract metadata while filtering out the 'pk' key
+    metadata = (
+        {key: val for key, val in metadata_items[0].items() if key != "pk"}
+        if metadata_items
+        else {}
+    )
+
+    # Extract messages focusing only on the content inside the 'message' dictionary
     messages = [msg["message"] for msg in message_items if "message" in msg]
-    return messages
+
+    return messages, metadata
 
 
 def lambda_handler(event, context):
@@ -42,27 +51,42 @@ def lambda_handler(event, context):
         if not sessions_items or len(sessions_items) == 0:
             return not_found_error()
 
+        sessions = []  # Initialize an empty list to store session dictionaries
         for session in sessions_items:
             session_id = session["pk"]
             session.pop("user_id", None)
+
+            metadata_response = memory_table.query(
+                KeyConditionExpression=Key("pk").eq(session_id)
+                & Key("sk").eq("METADATA"),
+                FilterExpression=Attr("is_deleted").eq(False)
+                & Attr("is_deleted").exists(),
+            )
+            metadata_items = metadata_response.get("Items", [])
+            if not metadata_items:
+                return not_found_error()
+
             messages_response = memory_table.query(
                 KeyConditionExpression=Key("pk").eq(session_id)
                 & Key("sk").begins_with("MESSAGE_")
             )
             messages_items = messages_response.get("Items", [])
-            messages = clean_messages_items(messages_items)
+
+            messages, metadata = clean_messages_and_metadata_items(
+                messages_items, metadata_items
+            )
+            session["metadata"] = metadata
             session["messages"] = messages
 
-        data = (
-            {
-                key: val
-                for key, val in sessions_items[0].items()
-                if key != "sk" and key != "created_at" and key != "is_deleted"
-            }
-            if sessions_items
-            else {}
-        )
-        body = {"user_id": user_id, "sessions": data}
+            sessions.append(
+                {
+                    key: val
+                    for key, val in session.items()
+                    if key != "sk" and key != "created_at" and key != "is_deleted"
+                }
+            )
+
+        body = {"user_id": user_id, "sessions": sessions}
         return success_response(body)
     except ValueError as e:
         return error_response(str(e))
