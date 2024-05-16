@@ -25,7 +25,7 @@ class MemoryInterface:
         """Remove or clear the session."""
         raise NotImplementedError("This method should be overridden by subclasses")
 
-    def restore(self, session_id: str, messages: List[dict]) -> None:
+    def restore(self, messages: List[dict]) -> None:
         """Restore the session.
 
         Args:

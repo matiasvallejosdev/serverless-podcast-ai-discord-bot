@@ -140,9 +140,12 @@ def run():
             for session in res:
                 metadata = session.get("metadata", {})
                 messages = session.get("messages", [])
+                
                 pk = session.get("pk", "").replace("SESSION#", "")
-
-                text = f"Your session_id is {pk} with title {metadata.get('title', 'No title')}. It has {len(messages)} messages. It was created at {session.get('created_at', 'No date')}."
+                date = session.get("created_at", "No date")
+                title = metadata.get("title", "No title")
+                
+                text = f"- {title} with session_id `{pk}`. It has {len(messages)} messages. ({date.split('T')[0].replace('-', '/')})"
                 body.append(text)
             body.append("--------------------------------------------------------")
             body.append(
@@ -166,15 +169,22 @@ def run():
 
         await interaction.response.defer()
         try:
-            await podcast_gpt.restore_session(session_id)
+            restored_messages = await podcast_gpt.restore_session(session_id)
 
-            messages = [
+            user_message = [
                 "Memory restored successfully. We're ready to continue the conversation 😃",
                 "If you want to save the conversation, use the `/save` command.",
             ]
             await sender.send_message(
-                interaction, user_id, "/restore", "\n".join(messages)
+                interaction, user_id, "/restore", "\n".join(user_message)
             )
+            
+            restored_messages.pop(0)
+            for msg in restored_messages:
+                if msg["role"] == "assistant":
+                    await sender.send_message(
+                        interaction, user_id, "/restore", msg["content"]
+                    )
         except Exception as e:
             await sender.send_message(interaction, user_id, "/restore", str(e))
 

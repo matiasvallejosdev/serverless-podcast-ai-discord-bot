@@ -69,10 +69,11 @@ class PodcastAgent:
     async def get_all_sessions(self) -> list:
         return await self.serverless_api.get_all_session()
     
-    async def restore_session(self, session_id: str):
+    async def restore_session(self, session_id: str) -> list:
         res = await self.serverless_api.get_session(session_id)
         messages = res.get("messages", [])
-        self.memory.restore(session_id, messages)
+        self.memory.restore(messages)
+        return messages
         
     def clear_memory(self):
         self.memory.remove()
