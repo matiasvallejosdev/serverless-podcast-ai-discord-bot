@@ -1,13 +1,11 @@
 from importlib import metadata
 import os
-from pyexpat.errors import messages
 import discord
 
 from dotenv import load_dotenv, find_dotenv
 from common.utils.utils import read_json
 
-from src.whisper.audio import WhisperModel
-from src.discord.discord import DiscordClient, DiscordSender
+from bot.src.discord.discord_client import DiscordClient, DiscordSender
 
 from src.agent.agent_podcast import PodcastAgent
 from src.agent.agent_memory import InMemoryDB
@@ -15,7 +13,7 @@ from src.agent.agent_memory import InMemoryDB
 from data.discord import commands_info, usage_info, copyright_info
 from data.prompts import summarize_prompt, pre_transcription_prompt
 
-from src.api.serverless import ServerlessAPI
+from bot.src.api.api_podcast_agent_bot import PodcastAgentBotAPI
 
 load_dotenv(find_dotenv())
 API_BASE_URL = os.getenv("API_BASE_URL")
@@ -23,17 +21,16 @@ API_KEY_VALUE = os.getenv("API_KEY_VALUE")
 API_KEY_HEADER = os.getenv("API_KEY_HEADER")
 
 # Initialize models
-audio = WhisperModel()
 assistant = read_json("./config/prompt_assistant.json")
 inmemory = InMemoryDB(assistant_prompt=assistant)
-serverless = ServerlessAPI(
+serverless = PodcastAgentBotAPI(
     api_base_url=API_BASE_URL,
     api_key_value=API_KEY_VALUE,
     api_key_header=API_KEY_HEADER,
 )
 
 base_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "files")
-podcast_gpt = PodcastAgent(serverless, inmemory, audio, base_path)
+podcast_gpt = PodcastAgent(serverless, inmemory, base_path)
 
 
 def run():
@@ -261,6 +258,11 @@ def run():
             send = f"Channel purged. Removed {len(deleted)} messages."
             await sender.send_message(interaction, user_id, "/purge", send)
 
+    # TODO: Upload Audio to s3 server and transcribe it using ChatGPT4-o
+    # TODO: Summarize Audio with a command
+    # TODO: Metadata Session to save the title of the session
+    # TODO: Create command and API Endpoint to generate a notion page with the session messages
+    
     # Run your discord client
     client.run(token=os.getenv("DISCORD_TOKEN"))
 

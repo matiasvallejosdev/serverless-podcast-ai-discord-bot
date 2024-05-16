@@ -1,24 +1,17 @@
-from importlib import metadata
 import os
-from datetime import datetime
-from typing import Dict
 
 from src.agent.agent_memory import MemoryInterface
-from src.api.serverless import ServerlessInterface
-from src.whisper.audio import AudioInterface
-
+from bot.src.api.api_podcast_agent_bot import ServerlessInterface
 
 class PodcastAgent:
     def __init__(
         self,
         serverless_api: ServerlessInterface,
         memory: MemoryInterface,
-        audio: AudioInterface,
         base_path: str,
     ):
         self.serverless_api = serverless_api
         self.memory = memory
-        self.audio = audio
         self.base_path = base_path
 
         self.audio_base_path = os.path.join(base_path, "audio")
