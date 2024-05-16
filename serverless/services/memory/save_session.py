@@ -37,10 +37,9 @@ def parse_and_validate(event):
         if (
             "role" not in message
             or "content" not in message
-            or "user_id" not in message
         ):
             raise ValueError(
-                "Each message should have 'role', 'content' and 'user_id' keys."
+                "Each message should have 'role' and 'content' keys."
             )
 
     return session_id, messages, metadata
@@ -61,7 +60,8 @@ def lambda_handler(event, context):
             "pk": session_id,
             "messages": messages,
             "metadata": metadata,
-            "is_deleted": False
+            "is_deleted": False,
+            "created_at": datetime.datetime.now().isoformat(),
         }
         memory_table.put_item(Item=item)
 

@@ -50,7 +50,8 @@ def lambda_handler(event, context):
         if not session_items:
             return not_found_error()
         
-        return success_response(session_items)
+        session = session_items[0]
+        return success_response(session)
     except ValueError as e:
         return error_response(str(e))
     except Exception as e:
