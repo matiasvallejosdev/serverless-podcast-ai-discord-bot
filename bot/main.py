@@ -232,6 +232,25 @@ def run():
         except Exception as e:
             await sender.send_message(interaction, user_id, "/delete", str(e))
 
+    @client.tree.command(
+        name="purge_channel",
+        description="Purge the chat history of the user.",
+    )
+    async def purge_channel(interaction: discord.Interaction):
+        user_id = interaction.user.id
+
+        if client.is_channel_allowed(str(interaction.channel_id)) is False:
+            send = "You're not allowed to use this command in this channel."
+            await sender.send_message(interaction, user_id, "/clear", send)
+            return
+
+        await interaction.response.defer(ephemeral=True)
+        channel = interaction.channel
+        if channel is not None:
+            deleted = await channel.purge(limit=None)
+            send = f"Channel purged. Removed {len(deleted)} messages."
+            await sender.send_message(interaction, user_id, "/purge", send)
+
     # Run your discord client
     client.run(token=os.getenv("DISCORD_TOKEN"))
 
