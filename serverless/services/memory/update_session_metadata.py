@@ -1,11 +1,15 @@
 import os
 import boto3
 
-from boto3.dynamodb.conditions import Key
+from boto3.dynamodb.conditions import Key, Attr
 from common.utils.lambda_utils import load_body_from_event
 
 from common.utils.lambda_utils import load_path_parameter_from_event
-from common.utils.error_handler import error_response, internal_server_error
+from common.utils.error_handler import (
+    error_response,
+    internal_server_error,
+    not_found_error,
+)
 from common.utils.response_utils import success_response
 
 table_name = os.getenv("MEMORY_TABLE_NAME")
@@ -24,27 +28,28 @@ def parse_and_validate(event):
     return session_id, body
 
 
-def build_update_expression(body):
-    update_expression = "SET "
-    expression_attribute_values = {}
-    for key, value in body.items():
-        update_expression += f"{key} = :{key}, "
-        expression_attribute_values[f":{key}"] = value
-    update_expression = update_expression.rstrip(", ")
-    return update_expression, expression_attribute_values
-
-
 def lambda_handler(event, context):
     try:
         session_id, body = parse_and_validate(event)
-        update_expression, expression_attribute_values = build_update_expression(body)
+
+        res_session = memory_table.query(
+            KeyConditionExpression=Key("pk").eq(session_id),
+            FilterExpression=Attr("is_deleted").eq(False),
+        )
+        session_item = res_session.get("Items", [])
+
+        if not session_item:
+            return not_found_error()
+
+        metadata = session_item[0].get("metadata", {})
+        metadata.update(body)
 
         res = memory_table.update_item(
-            Key={"pk": session_id, "sk": "METADATA"},
-            UpdateExpression=update_expression,
-            ExpressionAttributeValues=expression_attribute_values,
-            ReturnValues="UPDATED_NEW",
+            Key={"pk": session_id},
+            UpdateExpression="SET metadata = :val",
+            ExpressionAttributeValues={":val": metadata},
         )
+
         if res["ResponseMetadata"]["HTTPStatusCode"] != 200:
             raise boto3.exceptions.Boto3Error("Failed to update session metadata!")
 

@@ -88,8 +88,8 @@ functions:
         - "!**"
         - services/gpt/**
         - common/**
-  add_session_message:
-    handler: services/memory/add_session_message.lambda_handler
+  save_session:
+    handler: services/memory/save_session.lambda_handler
     description: Add a message to the database by user id.
     environment:
       MEMORY_TABLE_NAME: ${env:MEMORY_TABLE_NAME}
@@ -148,14 +148,14 @@ functions:
         - "!**"
         - services/memory/**
         - common/**
-  get_sessions_user_id:
-    handler: services/memory/get_sessions_user_id.lambda_handler
-    description: Get all sessions by user_id.
+  get_all_sessions:
+    handler: services/memory/get_all_sessions.lambda_handler
+    description: Get all sessions.
     environment:
       MEMORY_TABLE_NAME: ${env:MEMORY_TABLE_NAME}
     events:
       - http:
-          path: sessions/users/{user_id}
+          path: sessions/
           method: GET
           private: true
     package:
@@ -188,13 +188,9 @@ resources:
         AttributeDefinitions:
           - AttributeName: pk
             AttributeType: S
-          - AttributeName: sk
-            AttributeType: S
         KeySchema:
           - AttributeName: pk
             KeyType: HASH
-          - AttributeName: sk
-            KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
     s3BucketRole:
       Type: AWS::IAM::Role

@@ -1,10 +1,10 @@
 import os
 import json
 import boto3
-from boto3.dynamodb.conditions import Key
+from boto3.dynamodb.conditions import Key, Attr
 
 from common.utils.lambda_utils import load_path_parameter_from_event
-from common.utils.error_handler import error_response, internal_server_error
+from common.utils.error_handler import error_response, internal_server_error, not_found_error
 from common.utils.response_utils import success_response
 
 table_name = os.getenv("MEMORY_TABLE_NAME")
@@ -23,18 +23,24 @@ def lambda_handler(event, context):
     try:
         session_id = parse_and_validate(event)
 
-        response = memory_table.query(
-            KeyConditionExpression=Key("pk").eq(session_id)
-            & Key("sk").begins_with("MESSAGE_")
+        res_session = memory_table.query(
+            KeyConditionExpression=Key("pk").eq(session_id),
+            FilterExpression=Attr("is_deleted").eq(False),
         )
-        messages = response.get("Items", [])
-
-        with memory_table.batch_writer() as batch:
-            for message in messages:
-                batch.delete_item(Key={"pk": message["pk"], "sk": message["sk"]})
-
-        body = {"message": "All messages deleted successfully!"}
-        return success_response(body)
+        session_item = res_session.get("Items", [])
+        if not session_item:
+            return not_found_error()
+        
+        res_update = memory_table.update_item(
+            Key={"pk": session_id},
+            UpdateExpression="SET messages = :val",
+            ExpressionAttributeValues={":val": []},
+        )
+        if res_update["ResponseMetadata"]["HTTPStatusCode"] != 200:
+            raise boto3.exceptions.Boto3Error("Failed to delete all messages! Please try again!")
+        else:
+            body = {"message": "Session deleted successfully"}
+            return success_response(body)
     except ValueError as e:
         return error_response(str(e))
     except Exception as e:

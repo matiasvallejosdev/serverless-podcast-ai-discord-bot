@@ -28,21 +28,21 @@ def lambda_handler(event, context):
     try:
         session_id = parse_and_validate(event)
 
-        metadata_response = memory_table.query(
-            KeyConditionExpression=Key("pk").eq(session_id) & Key("sk").eq("METADATA"),
-            FilterExpression=Attr("is_deleted").eq(False) & Attr("is_deleted").exists(),
+        res_session = memory_table.query(
+            KeyConditionExpression=Key("pk").eq(session_id),
+            FilterExpression=Attr("is_deleted").eq(False),
         )
-        metadata_items = metadata_response.get("Items", [])
+        session_item = res_session.get("Items", [])
 
-        if not metadata_items:
+        if not session_item:
             return not_found_error()
 
-        res = memory_table.update_item(
-            Key={"pk": session_id, "sk": "METADATA"},
+        res_update = memory_table.update_item(
+            Key={"pk": session_id},
             UpdateExpression="SET is_deleted = :val",
             ExpressionAttributeValues={":val": True},
         )
-        if res["ResponseMetadata"]["HTTPStatusCode"] != 200:
+        if res_update["ResponseMetadata"]["HTTPStatusCode"] != 200:
             raise boto3.exceptions.Boto3Error("Failed to delete session!")
         else:
             body = {"message": "Session deleted successfully"}
