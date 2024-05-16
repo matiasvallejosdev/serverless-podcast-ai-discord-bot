@@ -3,10 +3,13 @@
 # Available commands for the bot
 commands_info = [
     "`/ask [question]` - Ask any question, and ChatGPT will respond with an insightful answer.",
-    "`/clear` - Clears your chat history, removing all previous interactions and responses.",
     "`/upload_audio [file] [language]` - Upload an audio file for analysis in the specified language. Supported formats are `mp3`, `wav`, and `ogg`. The bot will transcribe and summarize the audio content based on the selected language.",
-    "`/purge` - Purges and deletes all messages in the current channel. Use this command with caution.",
     "`/summarize`- Summarize the provided text extracted from the audio file.",
+    "`/clear` - Clears your chat history, removing all previous interactions and responses.",
+    "`/save_session` - Save the current conversation to the memory persistance."
+    "`/delete_session [session_id]` - Delete a specific session using the provided session ID.",
+    "`/restore_session [session_id]` - Restore a previous session using the provided session ID.",
+    "`/get_all_sessions` - Get a list of all available sessions."
     "`/help` - Displays this list of commands, helping you understand how to interact with the agent.",
 ]
 

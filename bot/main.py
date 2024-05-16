@@ -1,18 +1,20 @@
+from importlib import metadata
 import os
+from pyexpat.errors import messages
 import discord
 
 from dotenv import load_dotenv, find_dotenv
 from common.utils.utils import read_json
 
-from src.audio.audio import WhisperModel
+from src.whisper.audio import WhisperModel
 from src.discord.discord import DiscordClient, DiscordSender
 
-from src.app.podcast import PodcastGpt
+from src.agent.agent_podcast import PodcastAgent
+from src.agent.agent_memory import InMemoryDB
 
 from data.discord import commands_info, usage_info, copyright_info
 from data.prompts import summarize_prompt, pre_transcription_prompt
 
-from src.persitance.memory import InMemory
 from src.api.serverless import ServerlessAPI
 
 load_dotenv(find_dotenv())
@@ -22,12 +24,16 @@ API_KEY_HEADER = os.getenv("API_KEY_HEADER")
 
 # Initialize models
 audio = WhisperModel()
-system = read_json("./config/system.json")
-inmemory = InMemory(system_message="system")
-serverless = ServerlessAPI(api_base_url=API_BASE_URL, api_key_value=API_KEY_VALUE, api_key_header=API_KEY_HEADER)
+assistant = read_json("./config/prompt_assistant.json")
+inmemory = InMemoryDB(assistant_prompt=assistant)
+serverless = ServerlessAPI(
+    api_base_url=API_BASE_URL,
+    api_key_value=API_KEY_VALUE,
+    api_key_header=API_KEY_HEADER,
+)
 
 base_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "files")
-podcast_gpt = PodcastGpt(serverless, inmemory, audio, base_path)
+podcast_gpt = PodcastAgent(serverless, inmemory, audio, base_path)
 
 
 def run():
@@ -73,15 +79,158 @@ def run():
             await sender.send_message(interaction, user_id, message, send)
             return
 
-        if interaction.user == client.user:
+        await interaction.response.defer()
+        try:
+            last_message, context, memory, memory_count = (
+                await podcast_gpt.get_response(user_id, message)
+            )
+            await sender.send_message(
+                interaction, user_id, message, last_message["content"]
+            )
+        except Exception as e:
+            await sender.send_message(interaction, user_id, message, str(e))
+
+    @client.tree.command(
+        name="save_session_to_memory",
+        description="Save the current conversation to the memory persistance.",
+    )
+    async def save(interaction: discord.Interaction):
+        user_id = interaction.user.id
+
+        if client.is_channel_allowed(str(interaction.channel_id)) is False:
+            send = "You're not allowed to use this command in this channel."
+            await sender.send_message(interaction, user_id, "/save", send)
             return
 
         await interaction.response.defer()
         try:
-            response = await podcast_gpt.get_response(user_id, message)
-            await sender.send_message(interaction, user_id, message, response["content"])
+            res = await podcast_gpt.save_session()
+            if res.get("status") == "error":
+                raise Exception("Error saving the memory. Please try again.")
+
+            messages = [
+                "Memory saved successfully. We're ready for the next conversation. 🚀",
+                "If you want to restore the conversation, use the /restore command.",
+            ]
+            await sender.send_message(
+                interaction, user_id, "/save", "\n".join(messages)
+            )
         except Exception as e:
-            await sender.send_message(interaction, user_id, message, str(e))
+            await sender.send_message(interaction, user_id, "/save", str(e))
+
+    @client.tree.command(
+        name="get_all_sessions",
+        description="Restore a conversation using session_id.",
+    )
+    async def get_all_sessions(interaction: discord.Interaction):
+        user_id = interaction.user.id
+
+        if client.is_channel_allowed(str(interaction.channel_id)) is False:
+            send = "You're not allowed to use this command in this channel."
+            await sender.send_message(interaction, user_id, "/restore", send)
+            return
+
+        await interaction.response.defer()
+        try:
+            res = await podcast_gpt.get_all_sessions()
+            body = [
+                f"You saved {len(res)} sessions. Here are the details:",
+                "--------------------------------------------------------",
+            ]
+            for session in res:
+                metadata = session.get("metadata", {})
+                messages = session.get("messages", [])
+                pk = session.get("pk", "").replace("SESSION#", "")
+
+                text = f"Your session_id is {pk} with title {metadata.get('title', 'No title')}. It has {len(messages)} messages. It was created at {session.get('created_at', 'No date')}."
+                body.append(text)
+            body.append("--------------------------------------------------------")
+            body.append(
+                "To restore a session, use the `/restore` command with the session_id."
+            )
+            await sender.send_message(interaction, user_id, "/restore", "\n".join(body))
+        except Exception as e:
+            await sender.send_message(interaction, user_id, "/restore", str(e))
+
+    @client.tree.command(
+        name="restore_session",
+        description="Restore a conversation using session_id.",
+    )
+    async def restore_session(interaction: discord.Interaction, session_id: str):
+        user_id = interaction.user.id
+
+        if client.is_channel_allowed(str(interaction.channel_id)) is False:
+            send = "You're not allowed to use this command in this channel."
+            await sender.send_message(interaction, user_id, "/restore", send)
+            return
+
+        await interaction.response.defer()
+        try:
+            await podcast_gpt.restore_session(session_id)
+
+            messages = [
+                "Memory restored successfully. We're ready to continue the conversation 😃",
+                "If you want to save the conversation, use the `/save` command.",
+            ]
+            await sender.send_message(
+                interaction, user_id, "/restore", "\n".join(messages)
+            )
+        except Exception as e:
+            await sender.send_message(interaction, user_id, "/restore", str(e))
+
+    @client.tree.command(
+        name="clear_memory",
+        description="Clear the memory of the current conversation.",
+    )
+    async def clear(interaction: discord.Interaction):
+        user_id = interaction.user.id
+
+        if client.is_channel_allowed(str(interaction.channel_id)) is False:
+            send = "You're not allowed to use this command in this channel."
+            await sender.send_message(interaction, user_id, "/clear", send)
+            return
+
+        await interaction.response.defer()
+        try:
+            podcast_gpt.clear_memory()
+            messages = [
+                "Memory cleared successfully. We're ready for the next conversation. 🚀",
+                "If you want to restore the conversation, use the /restore command.",
+            ]
+            await sender.send_message(
+                interaction, user_id, "/clear", "\n".join(messages)
+            )
+        except Exception as e:
+            await sender.send_message(interaction, user_id, "/clear", str(e))
+
+    @client.tree.command(
+        name="delete_session",
+        description="Delete a conversation using session_id.",
+    )
+    async def delete_session(interaction: discord.Interaction, session_id: str):
+        user_id = interaction.user.id
+
+        if client.is_channel_allowed(str(interaction.channel_id)) is False:
+            send = "You're not allowed to use this command in this channel."
+            await sender.send_message(interaction, user_id, "/delete", send)
+            return
+
+        await interaction.response.defer()
+        try:
+            res = await podcast_gpt.delete_session(session_id)
+            if res.get("status") == "error":
+                raise Exception("Session not found. Please check the session_id.")
+
+            messages = [
+                f"Session {session_id} deleted successfully. You can't restore this conversation anymore. 🗑️",
+                "If you want to restore the conversation, use the `/restore` command.",
+                "If you want to save the conversation, use the `/save` command.",
+            ]
+            await sender.send_message(
+                interaction, user_id, "/delete", "\n".join(messages)
+            )
+        except Exception as e:
+            await sender.send_message(interaction, user_id, "/delete", str(e))
 
     # Run your discord client
     client.run(token=os.getenv("DISCORD_TOKEN"))
